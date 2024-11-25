@@ -1,7 +1,6 @@
 package com.example.demo.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,27 +16,15 @@ import com.example.demo.entity.ECommunity;
 
 @Component
 public class CommunityDao {
-	private final String JDBC_DRIVEWR="com.mysql.cj.jdbc.Driver";
-	private final String URL="jdbc:mySQL://localhost/help_shopping_app";
-	private final String USER="root";
-	private final String PASS="Masu-Pitti_0118";
+	DbCommon db = null;
 	
-//	データベースへの接続
-	private Connection connectDB(){
-		Connection con = null;
-		try {
-			Class.forName(JDBC_DRIVEWR);
-			con = DriverManager.getConnection(URL, USER, PASS);
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		return con;
+	public CommunityDao() {
+		db = new DbCommon();
 	}
-	
+
 	public List<CommunityDto> getCommunityList(int user_id) {
 		List<CommunityDto> list = new ArrayList<>();
-		Connection con = connectDB();
+		Connection con = db.connectDB();
 		String sql = "SELECT r.id, r.community_id, c.community_name, r.user_id, u.name FROM community_relations AS r INNER JOIN users AS u ON r.user_id=u.id INNER JOIN communities AS c ON r.community_id=c.id WHERE community_id in (SELECT community_id FROM community_relations WHERE user_id = ?) ORDER BY r.community_id ASC";
 		try {
 			PreparedStatement pst = con.prepareStatement(sql);
@@ -60,7 +47,7 @@ public class CommunityDao {
 	
 	public List<ECommunity> getAllCommunityList(){
 		List<ECommunity> list = new ArrayList<>();
-		Connection con = connectDB();
+		Connection con = db.connectDB();
 		String sql = "SELECT * FROM communities";
 		try {
 			PreparedStatement pst = con.prepareStatement(sql);
@@ -82,7 +69,7 @@ public class CommunityDao {
 	
 	public boolean joinCommunity(int community_id, int user_id) {
 		Timestamp created_at = new Timestamp(System.currentTimeMillis());
-		Connection con = connectDB();
+		Connection con = db.connectDB();
 		String sql = "INSERT INTO community_relations (community_id, user_id, created_at) VALUES ?,?,?";
 		try {
 			PreparedStatement pst = con.prepareStatement(sql);

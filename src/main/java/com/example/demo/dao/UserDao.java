@@ -1,7 +1,6 @@
 package com.example.demo.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,22 +15,10 @@ import com.example.demo.entity.EUser;
 @Component
 public class UserDao {
 	
-	private final String JDBC_DRIVEWR="com.mysql.cj.jdbc.Driver";
-	private final String URL="jdbc:mySQL://localhost/help_shopping_app";
-	private final String USER="root";
-	private final String PASS="Masu-Pitti_0118";
+	DbCommon db = null;
 	
-	
-	private Connection connectDB() {
-		Connection con = null;
-		try {
-			Class.forName(JDBC_DRIVEWR);
-			con = DriverManager.getConnection(URL, USER, PASS);
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		return con;
+	public UserDao() {
+		db = new DbCommon();
 	}
 	
 	public List<EUser> getUserList(){
@@ -39,7 +26,7 @@ public class UserDao {
 		List<EUser> list = new ArrayList<>();
 		String sql = "SELECT * FROM users";
 		try {
-			Connection con = connectDB();
+			Connection con = db.connectDB();
 			PreparedStatement pst = con.prepareStatement(sql);
 			ResultSet rs = pst.executeQuery();
 			while(rs.next()) {
@@ -82,7 +69,7 @@ public class UserDao {
 		Timestamp created_at = new Timestamp(System.currentTimeMillis());
 		try {
 			String sql = "INSERT INTO users (name, email, password, tel, created_at) VALUES (?, ?, ?, ?, ?)";
-			Connection con = connectDB();
+			Connection con = db.connectDB();
 			PreparedStatement pst = con.prepareStatement(sql);
 			pst.setString(1, name);
 			pst.setString(2, email);

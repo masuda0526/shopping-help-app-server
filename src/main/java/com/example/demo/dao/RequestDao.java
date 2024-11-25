@@ -1,7 +1,6 @@
 package com.example.demo.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -16,27 +15,16 @@ import com.example.demo.entity.ERequest;
 @Component
 public class RequestDao {
 	
-	private final String JDBC_DRIVEWR="com.mysql.cj.jdbc.Driver";
-	private final String URL="jdbc:mySQL://localhost/help_shopping_app";
-	private final String USER="root";
-	private final String PASS="Masu-Pitti_0118";
+	DbCommon db = null;
 	
-//	データベースへの接続
-	private Connection connectDB() {
-		Connection con = null;
-		try {
-			Class.forName(JDBC_DRIVEWR);
-			con = DriverManager.getConnection(URL, USER, PASS);
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		return con;
+	public RequestDao() {
+		db = new DbCommon();
 	}
-//	全リクエストを取得
+
+	//	全リクエストを取得
 	public List<ERequest> getAllRequests(){
 		List<ERequest> list = new ArrayList<>();
-		Connection con = connectDB();		
+		Connection con = db.connectDB();
 		String sql = "SELECT * FROM requests";
 		try {
 			PreparedStatement pst = con.prepareStatement(sql);
@@ -70,7 +58,7 @@ public class RequestDao {
 	public List<RequestDto> getComunityRequests(int id){
 		
 		List<RequestDto> list = new ArrayList<>();
-		Connection con = connectDB();		
+		Connection con = db.connectDB();
 //		String sql = "SELECT * FROM requests WHERE request_user_id IN (SELECT user_id FROM community_relations WHERE community_id IN (SELECT community_id FROM community_relations WHERE user_id=?));";
 		String sql = "select r.id,r.product_name,r.request_user_id,u.name,r.created_at,r.isbuy,r.delete_flg,r.buy_user_id, r.inCart, r.inCart_user_id from requests as r left outer join users as u on r.request_user_id = u.id where request_user_id in (select user_id from community_relations where community_id in (select community_id from community_relations where user_id=?)) AND r.delete_flg = false AND r.isbuy=false";
 		try {
@@ -105,7 +93,7 @@ public class RequestDao {
 	}
 	
 	public boolean addRequest(String product_name, int request_user_id) {
-		Connection con = connectDB();
+		Connection con = db.connectDB();
 		boolean result = false;
 		Timestamp created_at = new Timestamp(System.currentTimeMillis());
 		String sql = "INSERT INTO requests (product_name, request_user_id, created_at) values (?, ?, ?)";
@@ -125,7 +113,7 @@ public class RequestDao {
 	}
 	
 	public boolean toggleInCart(int request_id, int inCart_user_id, boolean bool) {
-		Connection con = connectDB();
+		Connection con = db.connectDB();
 		boolean result = false;
 		
 		Timestamp updated_at = new Timestamp(System.currentTimeMillis());
@@ -148,7 +136,7 @@ public class RequestDao {
 	}
 	
 	public boolean compShopping(int buy_user_id) {
-		Connection con = connectDB();
+		Connection con = db.connectDB();
 		boolean result = false;
 		Timestamp updated_at = new Timestamp(System.currentTimeMillis());
 		String sql = "UPDATE requests SET isbuy=true, updated_at=?, buy_user_id=? where inCart=true and inCart_user_id=?";
