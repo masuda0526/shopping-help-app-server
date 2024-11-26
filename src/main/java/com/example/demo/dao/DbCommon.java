@@ -23,7 +23,7 @@ public class DbCommon {
 	}
 	
 	private Properties readProperties()  throws Exception {
-		File propFile = new File("/src/main/resources/mysql-user-info.properties");
+		File propFile = new File("./src/main/resources/mysql-user-info.properties");
 		Properties prop = new Properties();
 		prop.load(new FileReader(propFile));
 		return prop;
