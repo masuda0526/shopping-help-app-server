@@ -9,6 +9,8 @@ public class ECommunity {
 	
 	private int id;
 	private String community_name;
+	private String com_auth_id;
+	private String com_expl;
 	private Timestamp created_at;
 	private Timestamp updated_at;
 	private boolean delete_flg;

@@ -31,4 +31,9 @@ public class CommunityController {
 	public boolean joinCommunity(@RequestParam int community_id, @RequestParam int user_id) {
 		return comDao.joinCommunity(community_id, user_id);
 	}
+	
+	@GetMapping("/community/create")
+	public boolean createCommunity(@RequestParam String community_name, @RequestParam String com_expl) {
+		return comDao.createCommunity(community_name, com_expl);
+	}
 }
