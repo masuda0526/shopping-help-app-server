@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
+import com.example.demo.common.StartupConstant;
+
 public class DbCommon {
 
 //	データベースへの接続
@@ -23,7 +25,7 @@ public class DbCommon {
 	}
 	
 	private Properties readProperties()  throws Exception {
-		File propFile = new File("./src/main/resources/mysql-user-info.properties");
+		File propFile = new File(StartupConstant.DB_PROP_FILE);
 		Properties prop = new Properties();
 		prop.load(new FileReader(propFile));
 		return prop;
