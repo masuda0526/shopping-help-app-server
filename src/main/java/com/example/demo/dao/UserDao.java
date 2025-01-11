@@ -36,6 +36,7 @@ public class UserDao {
 				user.setEmail(rs.getString("email"));
 				user.setPassword(rs.getString("password"));
 				user.setTel(rs.getString("tel"));
+				user.setUser_type(rs.getInt("user_type"));
 				user.setCreated_at(rs.getTimestamp("created_at"));
 				user.setCreated_at(rs.getTimestamp("updated_at"));
 				user.setDelete_flg(rs.getBoolean("delete_flg"));
