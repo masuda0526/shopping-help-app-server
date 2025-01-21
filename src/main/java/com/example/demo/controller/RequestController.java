@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dao.RequestDao;
+import com.example.demo.dto.MypageCommunityRequestListDto;
 import com.example.demo.dto.RequestDto;
 
 @RestController
@@ -21,8 +22,8 @@ public class RequestController {
 	}
 	
 	@GetMapping("/request/add")
-	public boolean addRequest(@RequestParam String product_name, @RequestParam int request_user_id) {
-		return reqDao.addRequest(product_name, request_user_id);
+	public boolean addRequest(@RequestParam String product_name, @RequestParam int vol, @RequestParam String unit, @RequestParam int request_user_id) {
+		return reqDao.addRequest(product_name, vol, unit, request_user_id);
 	}
 	
 	@GetMapping("/request/togglecart")
@@ -33,6 +34,11 @@ public class RequestController {
 	@GetMapping("/request/comp")
 	public boolean compShopping(@RequestParam int buy_user_id) {
 		return reqDao.compShopping(buy_user_id);
+	}
+	
+	@GetMapping("/request/mypage")
+	public List<MypageCommunityRequestListDto> getRequestForMypage(@RequestParam int user_id){
+		return reqDao.getRequestForMypage(user_id);
 	}
 	
 }

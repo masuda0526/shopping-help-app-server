@@ -9,6 +9,8 @@ public class ERequest {
 	
 	private int id;
 	private String product_name;
+	private int vol;
+	private String unit;
 	private int request_user_id;
 	private boolean isbuy;
 	private int buy_user_id;

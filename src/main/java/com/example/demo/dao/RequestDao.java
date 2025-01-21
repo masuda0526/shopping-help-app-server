@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.example.demo.dto.MypageCommunityRequestListDto;
 import com.example.demo.dto.RequestDto;
 import com.example.demo.entity.ERequest;
 
@@ -33,6 +34,8 @@ public class RequestDao {
 				ERequest req = new ERequest();
 				req.setId(rs.getInt("id"));
 				req.setProduct_name(rs.getString("product_name"));
+				req.setVol(rs.getInt("vol"));
+				req.setUnit(rs.getString("unit"));
 				req.setRequest_user_id(rs.getInt("request_user_id"));
 				req.setIsbuy(rs.getBoolean("isbuy"));
 				req.setBuy_user_id(rs.getInt("buy_user_id"));
@@ -60,7 +63,7 @@ public class RequestDao {
 		List<RequestDto> list = new ArrayList<>();
 		Connection con = db.connectDB();
 //		String sql = "SELECT * FROM requests WHERE request_user_id IN (SELECT user_id FROM community_relations WHERE community_id IN (SELECT community_id FROM community_relations WHERE user_id=?));";
-		String sql = "select r.id,r.product_name,r.request_user_id,u.name,r.created_at,r.isbuy,r.delete_flg,r.buy_user_id, r.inCart, r.inCart_user_id from requests as r left outer join users as u on r.request_user_id = u.id where request_user_id in (select user_id from community_relations where community_id in (select community_id from community_relations where user_id=?)) AND r.delete_flg = false AND r.isbuy=false";
+		String sql = "select r.id, r.product_name, r.vol, r.unit, r.request_user_id, u.name, r.created_at, r.isbuy, r.delete_flg, r.buy_user_id, r.inCart, r.inCart_user_id from requests as r left outer join users as u on r.request_user_id = u.id where request_user_id in (select user_id from community_relations where community_id in (select community_id from community_relations where user_id=?)) AND r.delete_flg = false AND r.isbuy=false";
 		try {
 			PreparedStatement pst = con.prepareStatement(sql);
 			pst.setInt(1, id);
@@ -69,6 +72,8 @@ public class RequestDao {
 				RequestDto req = new RequestDto();
 				req.setId(rs.getInt("id"));
 				req.setProduct_name(rs.getString("product_name"));
+				req.setVol(rs.getInt("vol"));
+				req.setUnit(rs.getString("unit"));
 				req.setRequest_user_id(rs.getInt("request_user_id"));
 				req.setName(rs.getString("name"));
 				req.setIsbuy(rs.getBoolean("isbuy"));
@@ -92,16 +97,18 @@ public class RequestDao {
 			
 	}
 	
-	public boolean addRequest(String product_name, int request_user_id) {
+	public boolean addRequest(String product_name, int vol, String unit,  int request_user_id) {
 		Connection con = db.connectDB();
 		boolean result = false;
 		Timestamp created_at = new Timestamp(System.currentTimeMillis());
-		String sql = "INSERT INTO requests (product_name, request_user_id, created_at) values (?, ?, ?)";
+		String sql = "INSERT INTO requests (product_name, vol, unit, request_user_id, created_at) values (?, ?, ?, ?, ?)";
 		try{
 			PreparedStatement pst = con.prepareStatement(sql);
 			pst.setString(1, product_name);
-			pst.setInt(2, request_user_id);
-			pst.setTimestamp(3, created_at);
+			pst.setInt(2, vol);
+			pst.setString(3, unit);
+			pst.setInt(4, request_user_id);
+			pst.setTimestamp(5, created_at);
 			int rs = pst.executeUpdate();
 			if(rs > 0) {
 				result = true;
@@ -155,5 +162,41 @@ public class RequestDao {
 		return result;
 		
 	}
+	
+	public List<MypageCommunityRequestListDto> getRequestForMypage(int user_id){
+		List<RequestDto> reqList = getComunityRequests(user_id);
+		List<MypageCommunityRequestListDto> mypageList = new ArrayList<>();
+		for(RequestDto reqItem : reqList) {
+			Integer listIndex = isContainRequest(reqItem, mypageList);
+//			List<ERequest> eReqs = new ArrayList<>();
+			if(listIndex == null) {
+				MypageCommunityRequestListDto mypageDto = new MypageCommunityRequestListDto();
+				mypageDto.setUser_name(reqItem.getName());
+				mypageDto.setUser_id(reqItem.getRequest_user_id());
+//				eReqs.add(reqItem.castERequest());
+				mypageDto.addRequests(reqItem.castERequest());
+				mypageList.add(mypageDto);
+			}else {
+				mypageList.get(listIndex).addRequests(reqItem.castERequest());
+			}
+		}
+		
+		return mypageList;
+		
+	}
+	
+	private Integer isContainRequest(RequestDto item, List<MypageCommunityRequestListDto> mypageList) {
+		Integer result = null;
+		if(!mypageList.isEmpty()) {
+			for(int i = 0; i < mypageList.size(); i++){
+				if(item.getRequest_user_id() == mypageList.get(i).getUser_id()) {
+					result = i;
+					return result;
+				}
+			}			
+		}
+		return result;
+	}
+	
 }
 	

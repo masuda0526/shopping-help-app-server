@@ -36,6 +36,7 @@ public class UserDao {
 				user.setEmail(rs.getString("email"));
 				user.setPassword(rs.getString("password"));
 				user.setTel(rs.getString("tel"));
+				user.setUser_type(rs.getInt("user_type"));
 				user.setCreated_at(rs.getTimestamp("created_at"));
 				user.setCreated_at(rs.getTimestamp("updated_at"));
 				user.setDelete_flg(rs.getBoolean("delete_flg"));
@@ -64,18 +65,19 @@ public class UserDao {
 		
 	}
 	
-	public boolean signupUser(String name, String email, String password ,String tel) {
+	public boolean signupUser(String name, String email, String password ,String tel, int user_type) {
 		
 		Timestamp created_at = new Timestamp(System.currentTimeMillis());
 		try {
-			String sql = "INSERT INTO users (name, email, password, tel, created_at) VALUES (?, ?, ?, ?, ?)";
+			String sql = "INSERT INTO users (name, email, password, tel, user_type, created_at) VALUES (?, ?, ?, ?, ?, ?)";
 			Connection con = db.connectDB();
 			PreparedStatement pst = con.prepareStatement(sql);
 			pst.setString(1, name);
 			pst.setString(2, email);
 			pst.setString(3, password);
 			pst.setString(4, tel);
-			pst.setTimestamp(5, created_at);
+			pst.setInt(5, user_type);
+			pst.setTimestamp(6, created_at);
 			int rs = pst.executeUpdate();
 			if(rs <= 0) {
 				return false;
@@ -88,6 +90,24 @@ public class UserDao {
 		
 	}
 	
+	public boolean checkEmailDuplicate(String email) {
+		String sql = "SELECT count(email) FROM users where email = ?";
+		boolean rst = false;
+		try {
+			Connection con = db.connectDB();
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setString(1, email);
+			ResultSet rs = pst.executeQuery();
+			rs.next();
+			int intRs = rs.getInt(1);
+			if(intRs > 0) {
+				rst = true;
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return rst;
+	}
 	
 	
 	

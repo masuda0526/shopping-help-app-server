@@ -11,6 +11,7 @@ public class EUser {
 	private String email;
 	private String password;
 	private String tel;
+	private int user_type;
 	private Timestamp created_at;
 	private Timestamp updated_at;
 	private boolean delete_flg;

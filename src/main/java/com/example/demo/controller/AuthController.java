@@ -20,8 +20,13 @@ public class AuthController {
 	}
 	
 	@GetMapping("/signup")
-	public boolean signup(@RequestParam String name, @RequestParam String email, @RequestParam String password, @RequestParam String tel) {
-		return userdao.signupUser(name, email, password, tel);
+	public boolean signup(@RequestParam String name, @RequestParam String email, @RequestParam String password, @RequestParam String tel, @RequestParam int user_type) {
+		return userdao.signupUser(name, email, password, tel, user_type);
+	}
+	
+	@GetMapping("/email/duplicate/check")
+	public boolean checkEmailDuplicate(@RequestParam String email) {
+		return userdao.checkEmailDuplicate(email);
 	}
 	
 }
