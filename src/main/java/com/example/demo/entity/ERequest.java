@@ -7,18 +7,17 @@ import lombok.Data;
 @Data
 public class ERequest {
 	
-	private int id;
-	private String product_name;
-	private int vol;
-	private String unit;
-	private int request_user_id;
-	private boolean isbuy;
-	private int buy_user_id;
-	private Timestamp created_at;
-	private Timestamp updated_at;
-	private boolean delete_flg;
-	private boolean inCart;
-	private int inCart_user_id;
+	protected int id;
+	protected String product_name;
+	protected int vol;
+	protected String unit;
+	protected int request_user_id;
+	protected boolean inCart;
+	protected int inCart_user_id;
+	protected int buycode;
+	protected Timestamp created_at;
+	protected Timestamp updated_at;
+	protected boolean delete_flg;
 	
 	
 	

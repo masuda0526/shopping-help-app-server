@@ -12,6 +12,7 @@ public class EUser {
 	private String password;
 	private String tel;
 	private int user_type;
+	private String linkpass;
 	private Timestamp created_at;
 	private Timestamp updated_at;
 	private boolean delete_flg;

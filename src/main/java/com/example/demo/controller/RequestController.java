@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dao.RequestDao;
-import com.example.demo.dto.MypageCommunityRequestListDto;
+import com.example.demo.dto.MypageDto;
 import com.example.demo.dto.RequestDto;
+import com.example.demo.dto.RequestsDtoPerBuycode;
+import com.example.demo.dto.RequestsDtoPerUser;
 
 @RestController
 public class RequestController {
@@ -32,13 +34,24 @@ public class RequestController {
 	}
 	
 	@GetMapping("/request/comp")
-	public boolean compShopping(@RequestParam int buy_user_id) {
-		return reqDao.compShopping(buy_user_id);
+	public boolean compShopping(@RequestParam int[] r_uids, @RequestParam int buy_user_id) {
+		return reqDao.compShopping(r_uids, buy_user_id);
 	}
 	
 	@GetMapping("/request/mypage")
-	public List<MypageCommunityRequestListDto> getRequestForMypage(@RequestParam int user_id){
-		return reqDao.getRequestForMypage(user_id);
+	public MypageDto findRequestListPerUserByLinkUserForMypage(@RequestParam int user_id){
+		return reqDao.findRequestListPerUserByLinkUserForMypage(user_id);
 	}
+	
+	@GetMapping("/start/shopping")
+	public List<RequestsDtoPerUser> getStartShoppingList(@RequestParam int user_id){
+		return reqDao.findRequestListPerUserByLinkUserForStartShopping(user_id);
+	}
+	
+	@GetMapping("/delivery")
+	public List<RequestsDtoPerBuycode> getfindReqestListPerUserByUserIdForDelivery(@RequestParam int r_uid, @RequestParam int b_uid){
+		return reqDao.findReqestListPerUserByUserIdForDelivery(r_uid, b_uid);
+	}
+	
 	
 }
