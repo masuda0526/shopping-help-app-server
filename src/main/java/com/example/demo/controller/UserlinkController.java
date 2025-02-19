@@ -13,9 +13,14 @@ public class UserlinkController {
 	@Autowired
 	LinkDao ld;
 	
-	@GetMapping("regist/userlink")
+	@GetMapping("/userlink/regist")
 	public boolean registUserLink(@RequestParam int myid , @RequestParam String lp) {
 		return ld.registUserLink(myid, lp);
+	}
+	
+	@GetMapping("/userlink/getname")
+	public String getUserNameByLinkPass(@RequestParam String lp) {
+		return ld.getUserNameByLinkId(lp);
 	}
 	
 }

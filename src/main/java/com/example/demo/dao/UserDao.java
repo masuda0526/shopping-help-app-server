@@ -60,17 +60,18 @@ public class UserDao extends BaseDao {
 			PreparedStatement pst = con.prepareStatement(sql);
 			pst.setString(1, lp);
 			ResultSet rs = pst.executeQuery();
-			rs.next();
-			user.setId(rs.getInt("id"));
-			user.setName(rs.getString("name"));
-			user.setEmail(rs.getString("email"));
-			user.setPassword(rs.getString("password"));
-			user.setTel(rs.getString("tel"));
-			user.setUser_type(rs.getInt("user_type"));
-			user.setLinkpass(rs.getString("linkpass"));
-			user.setCreated_at(rs.getTimestamp("created_at"));
-			user.setCreated_at(rs.getTimestamp("updated_at"));
-			user.setDelete_flg(rs.getBoolean("delete_flg"));
+			while(rs.next()) {
+				user.setId(rs.getInt("id"));
+				user.setName(rs.getString("name"));
+				user.setEmail(rs.getString("email"));
+				user.setPassword(rs.getString("password"));
+				user.setTel(rs.getString("tel"));
+				user.setUser_type(rs.getInt("user_type"));
+				user.setLinkpass(rs.getString("linkpass"));
+				user.setCreated_at(rs.getTimestamp("created_at"));
+				user.setCreated_at(rs.getTimestamp("updated_at"));
+				user.setDelete_flg(rs.getBoolean("delete_flg"));				
+			}
 			return user;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -78,6 +79,11 @@ public class UserDao extends BaseDao {
 		return null;
 	}
 	
+	/**
+	 * 認証コードからユーザーIDを返却
+	 * @param lp　認証コード
+	 * @return
+	 */
 	public int returnUserIdByLinkPass(String lp) {
 		EUser eu = findUserByLinkPass(lp);
 		return eu.getId();

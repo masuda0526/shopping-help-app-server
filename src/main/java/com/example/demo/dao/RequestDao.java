@@ -321,7 +321,7 @@ public class RequestDao extends BaseDao {
 	 */
 	public List<RequestsJoinBuycode> findAllRequestsPerUser(int uid) {
 		List<RequestsJoinBuycode> li = new ArrayList<RequestsJoinBuycode>();
-		String sql = "SELECT r.id, r.product_name, r.vol, r.unit, r.request_user_id, u.name, r.inCart, r.inCart_user_id, r.buycode, b.seq, r.created_at, r.updated_at, r.delete_flg, b.r_uid, b.b_uid, b.b_at, b.isdelivery, b.d_at, b.isrecieve, b.r_at, b.r_acp_at, b.b_acp_at FROM requests AS r LEFT JOIN buycodes AS b ON r.buycode = b.buycode AND r.request_user_id = b.r_uid LEFT JOIN users AS u ON r.request_user_id = u.id WHERE r.delete_flg = false AND (request_user_id IN (SELECT uid1 FROM userlinks WHERE uid2=?) OR request_user_id IN (SELECT uid2 FROM userlinks WHERE uid1=?))";
+		String sql = "SELECT r.id, r.product_name, r.vol, r.unit, r.request_user_id, u.name, r.inCart, r.inCart_user_id, r.buycode, b.seq, r.created_at, r.updated_at, r.delete_flg, b.r_uid, b.b_uid, b.b_at, b.isdelivery, b.d_at, b.isrecieve, b.r_at, b.r_acp_at, b.b_acp_at FROM requests AS r LEFT JOIN buycodes AS b ON r.buycode = b.buycode AND r.request_user_id = b.r_uid LEFT JOIN users AS u ON r.request_user_id = u.id WHERE r.delete_flg = false AND (request_user_id IN (SELECT uid1 FROM userlinks WHERE uid2=? AND ismatch=true) OR request_user_id IN (SELECT uid2 FROM userlinks WHERE uid1=? AND ismatch=true))";
 		PreparedStatement pst;
 		try {
 			pst = con.prepareStatement(sql);
