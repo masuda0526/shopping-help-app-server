@@ -393,7 +393,7 @@ public class BuycodeDao extends BaseDao {
 	}
 	
 	/**
-	 * 最終確認日時を登録します。
+	 * 最終受け渡し確認日時を登録します。
 	 * @param buycode　購入ID
 	 * @param seq　seq
 	 * @return　登録完了でtrue、失敗でfalse
@@ -416,13 +416,13 @@ public class BuycodeDao extends BaseDao {
 	}
 	
 	/**
-	 * 最終確認日時を登録します。
+	 * 最終受け渡し確認日時を登録します。
 	 * @param r_uid　リクエストユーザーID
 	 * @param b_uid　購入ユーザーID
 	 * @return　登録完了でtrue、失敗でfalse
 	 */
 	public boolean acceptDeliveryByRequestUserId(int r_uid, int b_uid) {
-		String sql = "UPDATE buycodes SET b_acp_at=? WHERE r_uid=? AND b_uid=?";
+		String sql = "UPDATE buycodes SET b_acp_at=? WHERE r_uid=? AND b_uid=? AND isdelivery = true AND b_acp_at is NULL";
 		try {
 			PreparedStatement pst = con.prepareStatement(sql);
 			pst.setTimestamp(1, getNowTimestamp());
@@ -437,6 +437,52 @@ public class BuycodeDao extends BaseDao {
 		}
 		return false;
 		
+	}
+	
+	/**
+	 * 最終受け取り確認日時を登録します。
+	 * @param buycode 購入ID
+	 * @param seq　seq
+	 * @return 登録完了でtrue、失敗でfalse
+	 */
+	public boolean acceptRecieveByBycode(int buycode, int seq) {
+		String sql = "UPDATE buycodes SET r_acp_at = ? WHERE buycode = ? AND seq = ?";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setTimestamp(1, getNowTimestamp());
+			pst.setInt(2, buycode);
+			pst.setInt(3, seq);
+			int rs = pst.executeUpdate();
+			if(rs > 0) {
+				return true;
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	/**
+	 * 最終受け取り確認日時を登録します。
+	 * @param r_uid リクエストユーザーID
+	 * @param b_uid　購入者ユーザーID
+	 * @return 登録完了でtrue、失敗でfalse
+	 */
+	public boolean acceptRecieveByRequestUserId(int r_uid, int b_uid) {
+		String sql = "UPDATE buycodes SET r_acp_at=? WHERE r_uid=? AND b_uid=? AND isrecieve = true AND r_acp_at is NULL";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setTimestamp(1, getNowTimestamp());
+			pst.setInt(2, r_uid);
+			pst.setInt(3, b_uid);
+			int rs = pst.executeUpdate();
+			if(rs > 0) {
+				return true;
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 }

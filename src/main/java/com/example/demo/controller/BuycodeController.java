@@ -33,4 +33,14 @@ public class BuycodeController {
 		return bDao.acceptDeliveryByRequestUserId(r_uid, b_uid);
 	}
 	
+	@GetMapping("/accept/recieve/buycode")
+	public boolean acceptRecieveByBuycode(@RequestParam int buycode, @RequestParam int seq) {
+		return bDao.acceptDeliveryByBuycode(buycode, seq);
+	}
+	
+	@GetMapping("/accept/recieve/request_id")
+	public boolean acceptRecieveByRequestUserId(@RequestParam int r_uid, @RequestParam int b_uid) {
+		return bDao.acceptRecieveByRequestUserId(r_uid, b_uid);
+	}
+	
 }
