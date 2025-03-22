@@ -12,6 +12,7 @@ import com.example.demo.dto.MypageDto;
 import com.example.demo.dto.RequestDto;
 import com.example.demo.dto.RequestsDtoPerBuycode;
 import com.example.demo.dto.RequestsDtoPerUser;
+import com.example.demo.dto.UnitDto;
 
 @RestController
 public class RequestController {
@@ -53,5 +54,23 @@ public class RequestController {
 		return reqDao.findReqestListPerUserByUserIdForDelivery(r_uid, b_uid);
 	}
 	
+	@GetMapping("/getpersonalrequest")
+	public List<RequestDto> GetPersonalRequest(@RequestParam int r_uid){
+		return reqDao.getPersonalRequest(r_uid);
+	}
 	
+	@GetMapping("/request/remove")
+	public int removeRequest(@RequestParam int request_id){
+		return reqDao.rmRequest(request_id);
+	}
+	
+	@GetMapping("/getunitlist")
+	public List<UnitDto> getUnitList(@RequestParam int order){
+		return reqDao.getUnitList(order);
+	}
+
+	@GetMapping("/getbuycompreq")
+	public List<UnitDto> getBuyCompRequests(@RequestParam int order){
+		return reqDao.getBuyCompRequestsList(order);
+	}
 }

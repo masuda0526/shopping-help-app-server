@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,6 +19,7 @@ import com.example.demo.dto.RequestDto;
 import com.example.demo.dto.RequestsDtoPerBuycode;
 import com.example.demo.dto.RequestsDtoPerUser;
 import com.example.demo.dto.RequestsJoinBuycode;
+import com.example.demo.dto.UnitDto;
 import com.example.demo.entity.ERequest;
 
 @Component
@@ -528,5 +531,124 @@ public class RequestDao extends BaseDao {
 		return convertRequestsListPerBuycode(selectL);
 		
 	}
+
+	/**
+	 * 依頼者用のリクエストページのリストを返却
+	 * @param r_uid　リクエストユーザーID
+	 * @return　リクエストIDにひもづくリクエストプロダクト 
+	 */
+	public List<RequestDto> getPersonalRequest(int r_uid) {
+		List<RequestDto> returnList = new ArrayList<RequestDto>();
+		String sql = "select Distinct r.id, r.product_name, r.vol, r.unit, r.request_user_id, r.inCart, r.buycode from requests as r LEFT OUTER JOIN buycodes as b ON r.buycode = b.buycode where request_user_id = ? and (isrecieve is NULL or isrecieve = 0) and r.delete_flg = 0;";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setInt(1, r_uid);
+			ResultSet rs = pst.executeQuery();
+			while(rs.next()) {
+				RequestDto record = convertRequestDto(rs);
+				returnList.add(record);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return returnList;
+	}
+	
+	private RequestDto convertRequestDto(ResultSet rs) throws SQLException {
+		RequestDto rdto = new RequestDto();
+		rdto.setId(rs.getInt("id"));
+		rdto.setProduct_name(rs.getString("product_name"));
+		rdto.setVol(rs.getInt("vol"));
+		rdto.setUnit(rs.getString("unit"));
+		rdto.setRequest_user_id(rs.getInt("request_user_id"));
+		rdto.setInCart(rs.getBoolean("inCart"));
+		rdto.setBuycode(rs.getInt("buycode"));
+		return rdto;
+	}
+
+	/**
+	 * 依頼者用のリクエストページの削除ボタンを押下されたアイテムのdelete_flgを"1"に更新
+	 * @param request_id　削除するリクエストのID
+	 * @return　更新成功⇒0 購入済み⇒1 エラー⇒100以上
+	 */
+	public int rmRequest(int request_id) {
+		try {
+			// TODO 購入済み確認実装
+			
+			String sql = "update requests set delete_flg = 1 where id = ?;";
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setInt(1, request_id);
+			int rs = pst.executeUpdate();
+			if(rs == 1) {
+				return 0;
+			} else {
+				return 100;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return 101;
+		}
+	}
+	
+	/**
+	 * 単位の一覧を取得
+	 * @param order　並び順（0：昇順 0以外：降順）
+	 * @return　単位のList
+	 */
+	public List<UnitDto> getUnitList(int order) {
+		List<UnitDto> returnList = new ArrayList<UnitDto>();
+		String sql = "select * from units;";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			ResultSet rs = pst.executeQuery();
+			while(rs.next()) {
+				UnitDto ud = new UnitDto();
+				ud.setId(rs.getInt("id"));
+				ud.setSort_col(rs.getInt("sort_col"));
+				ud.setUnit_name(rs.getString("unit_name"));
+				returnList.add(ud);
+			}
+			if (order == 0) {
+				Collections.sort(returnList);
+			}else {
+				Collections.sort(returnList, Comparator.reverseOrder());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return returnList;
+	}
+	
+	/**
+	 * 単位の一覧を取得
+	 * @param order　並び順（0：昇順 0以外：降順）
+	 * @return　単位のList
+	 */
+	public List<UnitDto> getBuyCompRequestsList(int order) {
+		List<UnitDto> returnList = new ArrayList<UnitDto>();
+		String sql = "select * from units;";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			ResultSet rs = pst.executeQuery();
+			while(rs.next()) {
+				UnitDto ud = new UnitDto();
+				ud.setId(rs.getInt("id"));
+				ud.setSort_col(rs.getInt("sort_col"));
+				ud.setUnit_name(rs.getString("unit_name"));
+				returnList.add(ud);
+			}
+			if (order == 0) {
+				Collections.sort(returnList);
+			}else {
+				Collections.sort(returnList, Comparator.reverseOrder());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return returnList;
+	}
+	
 }
 	

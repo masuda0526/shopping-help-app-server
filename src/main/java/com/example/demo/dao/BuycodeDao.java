@@ -11,6 +11,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
+import com.example.demo.dto.RecieveWaitItemDto;
 import com.example.demo.entity.EBuycode;
 
 @Component
@@ -485,4 +486,74 @@ public class BuycodeDao extends BaseDao {
 		return false;
 	}
 	
+	/**
+	 * リクエストユーザIDに紐づく、配達待ちのアイテム一覧の返却
+	 * @param r_uid リクエストユーザーID
+	 * @return リクエストユーザIDに紐づく、配達待ちのアイテム一覧の返却
+	 */
+	public List<List<RecieveWaitItemDto>> getRecieveWaitItemList(int r_uid) {
+		List<List<RecieveWaitItemDto>> returnList = new ArrayList<>();
+		String sql = "select u.name, r.product_name, r.vol, r.unit, b.buycode, b.seq, b.isrecieve from buycodes as b inner join requests as r on b.buycode = r.buycode inner join users as u on b.b_uid = u.id where r_uid = ? and b.isrecieve = 0 order by u.name, b.buycode, b.seq;";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setInt(1, r_uid);
+			ResultSet rs = pst.executeQuery();
+			List<RecieveWaitItemDto> preRwItemList = null;
+			String preUserName = "";
+			while(rs.next()) {
+				RecieveWaitItemDto rwItem = new RecieveWaitItemDto(rs);
+				if (preUserName.equals(rwItem.getBuyUserName())) {
+					preRwItemList.add(rwItem);
+				} else {
+					if (preRwItemList != null) {
+						returnList.add(preRwItemList);
+					}
+					preRwItemList = new ArrayList<RecieveWaitItemDto>();
+					preRwItemList.add(rwItem);
+					preUserName = rwItem.getBuyUserName();
+				}
+			}
+			returnList.add(preRwItemList);
+			return returnList;
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public int commitRecieve(int buycode, int seq) {
+		String sql = "update buycodes set isrecieve = 1, r_at = ? where buycode = ? and seq = ?;";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setTimestamp(1, getNowTimestamp());
+			pst.setInt(2, buycode);
+			pst.setInt(3, seq);
+			int rs = pst.executeUpdate();
+			if(rs > 0) {
+				return 0;
+			}
+			return 99;
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return 99;
+	}
+
+	public int completeRecieve(int buycode, int seq) {
+		String sql = "update buycodes set r_acp_at = ? where buycode = ? and seq = ?;";
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setTimestamp(1, getNowTimestamp());
+			pst.setInt(2, buycode);
+			pst.setInt(3, seq);
+			int rs = pst.executeUpdate();
+			if(rs > 0) {
+				return 0;
+			}
+			return 99;
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return 99;
+	}
 }
