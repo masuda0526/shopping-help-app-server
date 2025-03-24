@@ -118,7 +118,7 @@ public class UserDao extends BaseDao {
 			pst.setString(4, tel);
 			pst.setInt(5, user_type);
 			pst.setString(6, lp);
-			pst.setTimestamp(6, created_at);
+			pst.setTimestamp(7, created_at);
 			int rs = pst.executeUpdate();
 			if(rs <= 0) {
 				return false;
