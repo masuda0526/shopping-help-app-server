@@ -162,7 +162,7 @@ public class UserDao extends BaseDao {
 	private String returnLinkPass() {
 		String linkpass = "";
 		boolean isDup = true;
-		while(!isDup) {
+		while(isDup) {
 			linkpass = createLinkPass();
 			isDup = checkLinkPassDuplicate(linkpass);
 		}

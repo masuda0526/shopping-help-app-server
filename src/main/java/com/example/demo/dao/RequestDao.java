@@ -499,7 +499,7 @@ public class RequestDao extends BaseDao {
 		List<RequestsJoinBuycode> nonpurchasedList = new ArrayList<RequestsJoinBuycode>();
 		if(!allL.isEmpty()) {
 			for(RequestsJoinBuycode item : allL) {
-				if(item.getBuycode() != 0 && !item.isIsdelivery()) {
+				if(item.getBuycode() != 0 && !item.isIsdelivery() && item.getInCart_user_id() == user_id) {
 					purchasedList.add(item);
 				}else if(item.getBuycode() == 0 && !item.isIsdelivery()) {
 					nonpurchasedList.add(item);
