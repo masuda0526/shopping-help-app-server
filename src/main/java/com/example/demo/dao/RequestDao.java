@@ -21,6 +21,7 @@ import com.example.demo.dto.RequestsDtoPerUser;
 import com.example.demo.dto.RequestsJoinBuycode;
 import com.example.demo.dto.UnitDto;
 import com.example.demo.entity.ERequest;
+import com.example.demo.util.UserType;
 
 @Component
 public class RequestDao extends BaseDao {
@@ -324,9 +325,21 @@ public class RequestDao extends BaseDao {
 	 */
 	public List<RequestsJoinBuycode> findAllRequestsPerUser(int uid) {
 		List<RequestsJoinBuycode> li = new ArrayList<RequestsJoinBuycode>();
-		String sql = "SELECT r.id, r.product_name, r.vol, r.unit, r.request_user_id, u.name, r.inCart, r.inCart_user_id, r.buycode, b.seq, r.created_at, r.updated_at, r.delete_flg, b.r_uid, b.b_uid, b.b_at, b.isdelivery, b.d_at, b.isrecieve, b.r_at, b.r_acp_at, b.b_acp_at FROM requests AS r LEFT JOIN buycodes AS b ON r.buycode = b.buycode AND r.request_user_id = b.r_uid LEFT JOIN users AS u ON r.request_user_id = u.id WHERE r.delete_flg = false AND (request_user_id IN (SELECT uid1 FROM userlinks WHERE uid2=? AND ismatch=true) OR request_user_id IN (SELECT uid2 FROM userlinks WHERE uid1=? AND ismatch=true))";
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT ");
+		sb.append("    r.id, r.product_name, r.vol, r.unit, r.request_user_id, u.name, r.inCart, r.inCart_user_id, ");
+		sb.append("    r.buycode, b.seq, r.created_at, r.updated_at, r.delete_flg, b.r_uid, b.b_uid, b.b_at, b.isdelivery, b.d_at, ");
+		sb.append("    b.isrecieve, b.r_at, b.r_acp_at, b.b_acp_at ");
+		sb.append("FROM requests AS r ");
+		sb.append("LEFT JOIN buycodes AS b ON r.buycode = b.buycode AND r.request_user_id = b.r_uid ");
+		sb.append("LEFT JOIN users AS u ON r.request_user_id = u.id ");
+		sb.append("WHERE ");
+		sb.append("    r.delete_flg = false AND ( ");
+		sb.append("    request_user_id IN ( SELECT uid1 FROM userlinks WHERE uid2=? AND ismatch=true ) OR ");
+		sb.append("    request_user_id IN ( SELECT uid2 FROM userlinks WHERE uid1=? AND ismatch=true ) ) ");
 		PreparedStatement pst;
 		try {
+			String sql = sb.toString();
 			pst = con.prepareStatement(sql);
 			pst.setInt(1, uid);
 			pst.setInt(2, uid);
@@ -649,6 +662,51 @@ public class RequestDao extends BaseDao {
 		
 		return returnList;
 	}
+	
+	/**
+	 * 未分類（ユーザーごとや購入IDごとに振り分けていない）未対応リストを返却します。
+	 * @param userId 利用者ID
+	 * @param userTypeNum userTypeNum ユーザータイプ（頼む人か届ける人か）
+	 * @return 未分類未対応リスト
+	 */
+	public List<RequestsJoinBuycode> getRequiredActionList(int userId, int userTypeNum){
+		List<RequestsJoinBuycode> allL = findAllRequestsPerUser(userId);
+		List<RequestsJoinBuycode> selectL = new ArrayList<RequestsJoinBuycode>();
+		for(RequestsJoinBuycode li : allL) {
+			if(userTypeNum == UserType.BUY_USER.getValue()) {
+				if(li.isIsdelivery() && Objects.isNull(li.getB_acp_at())) {
+					selectL.add(li);
+				}
+			}else if(userTypeNum == UserType.REQUEST_USER.getValue()){
+				if(li.isIsrecieve() && Objects.isNull(li.getR_acp_at())) {
+					selectL.add(li);
+				}
+			}
+		}
+		return selectL;
+	}
+	
+	/**
+	 * 未対応一覧をユーザーごとにまとめたリストを返却します
+	 * @param userId 利用者ID
+	 * @param userTypeNum ユーザータイプ（頼む人か届ける人か）
+	 * @return ユーザーごとにまとめた未対応リスト
+	 */
+	public List<RequestsDtoPerUser> getActionRequiredRequestByUserId(int userId, int userTypeNum){
+		return convertRequestsListPerUser(getRequiredActionList(userId, userTypeNum));
+		
+	}
+	
+	/**
+	 * 未対応一覧を購入IDごとにまとめたリストを返却します
+	 * @param userId 利用者ID
+	 * @param userTypeNum ユーザータイプ（頼む人か届ける人か）
+	 * @return 購入IDごとにまとめたリスト
+	 */
+	public List<RequestsDtoPerBuycode> getActionRequiredRequestByBuycode(int userId, int userTypeNum){
+		return convertRequestsListPerBuycode(getRequiredActionList(userId, userTypeNum));
+	}
+	
 	
 }
 	

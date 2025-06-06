@@ -13,6 +13,7 @@ import com.example.demo.dto.RequestDto;
 import com.example.demo.dto.RequestsDtoPerBuycode;
 import com.example.demo.dto.RequestsDtoPerUser;
 import com.example.demo.dto.UnitDto;
+import com.example.demo.util.UserType;
 
 @RestController
 public class RequestController {
@@ -73,4 +74,25 @@ public class RequestController {
 	public List<UnitDto> getBuyCompRequests(@RequestParam int order){
 		return reqDao.getBuyCompRequestsList(order);
 	}
+	
+	@GetMapping("/require/peru/b")
+	public List<RequestsDtoPerUser> getActionRequiredRequestForBuyerPerUser(@RequestParam int u_id){
+		return reqDao.getActionRequiredRequestByUserId(u_id, UserType.BUY_USER.getValue());
+	}
+	
+	@GetMapping("/require/perb/b")
+	public List<RequestsDtoPerBuycode> getActionRequiredRequestForBuyerPerBuycode(@RequestParam int u_id){
+		return reqDao.getActionRequiredRequestByBuycode(u_id, UserType.BUY_USER.getValue());
+	}
+	
+	@GetMapping("/require/peru/r")
+	public List<RequestsDtoPerUser> getActionRequiredRequestForRequestUserPerUser(@RequestParam int u_id){
+		return reqDao.getActionRequiredRequestByUserId(u_id, UserType.REQUEST_USER.getValue());
+	}
+	
+	@GetMapping("/require/perb/r")
+	public List<RequestsDtoPerBuycode> getActionRequiredRequestForBuyRequestUserPerBuycode(@RequestParam int u_id){
+		return reqDao.getActionRequiredRequestByBuycode(u_id, UserType.REQUEST_USER.getValue());
+	}
+	
 }
