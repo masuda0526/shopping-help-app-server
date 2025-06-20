@@ -304,6 +304,25 @@ public class RequestDao extends BaseDao {
 		return result;
 	}
 	
+	/**
+	 *パラーメータで受け取ったリクエストが、リストの中に含まれているか
+	 * @param item　リクエスト
+	 * @param mypageList　含まれているかどうか確認したいリクエストリスト
+	 * @return　含まれている場合は、該当するindex番号を返却、含まれていなければnull
+	 */
+	private Integer isContainRequestForRequestUser(RequestsJoinBuycode item, List<RequestsDtoPerUser> li) {
+		Integer result = null;
+		if(!li.isEmpty()) {
+			for(int i = 0; i < li.size(); i++) {
+				if(item.getB_uid() == li.get(i).getUser_id()) {
+					result = i;
+					return result;
+				}
+			}
+		}
+		return result;
+	}
+	
 	private Integer isContainRequestByBuycode(RequestsJoinBuycode item, List<RequestsDtoPerBuycode> li) {
 		Integer result = null;
 		if(!li.isEmpty()) {
@@ -343,6 +362,62 @@ public class RequestDao extends BaseDao {
 			pst = con.prepareStatement(sql);
 			pst.setInt(1, uid);
 			pst.setInt(2, uid);
+			ResultSet rs = pst.executeQuery();
+			while(rs.next()) {
+				RequestsJoinBuycode r = new RequestsJoinBuycode();
+				r.setId(rs.getInt("id"));
+				r.setProduct_name(rs.getString("product_name"));
+				r.setVol(rs.getInt("vol"));
+				r.setUnit(rs.getString("unit"));
+				r.setRequest_user_id(rs.getInt("request_user_id"));
+				r.setUser_name(rs.getString("name"));
+				r.setInCart(rs.getBoolean("inCart"));
+				r.setInCart_user_id(rs.getInt("inCart_user_id"));
+				r.setBuycode(rs.getInt("buycode"));
+				r.setSeq(rs.getInt("seq"));
+				r.setCreated_at(rs.getTimestamp("created_at"));
+				r.setUpdated_at(rs.getTimestamp("updated_at"));
+				r.setDelete_flg(rs.getBoolean("delete_flg"));
+				r.setR_uid(rs.getInt("r_uid"));
+				r.setB_uid(rs.getInt("b_uid"));
+				r.setB_at(rs.getTimestamp("b_at"));
+				r.setIsdelivery(rs.getBoolean("isdelivery"));
+				r.setD_at(rs.getTimestamp("d_at"));
+				r.setIsrecieve(rs.getBoolean("isrecieve"));
+				r.setR_at(rs.getTimestamp("r_at"));
+				r.setR_acp_at(rs.getTimestamp("r_acp_at"));
+				r.setB_acp_at(rs.getTimestamp("b_acp_at"));
+				li.add(r);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return li;
+	}
+	
+	/**
+	 * ユーザーIDと関係があるユーザーのrequestsテーブルとbuycodeテーブルを組み合わせたデータを取得します。（購入済・未購入・カートのみを区別せずに取得（削除済のものは除く)）
+	 * @param uid(頼む側）
+	 * @return リクエストのリスト
+	 */
+	public List<RequestsJoinBuycode> findAllRequestsPerRequestUser(int uid) {
+		List<RequestsJoinBuycode> li = new ArrayList<RequestsJoinBuycode>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT ");
+		sb.append("    r.id, r.product_name, r.vol, r.unit, r.request_user_id, u.name, r.inCart, r.inCart_user_id, ");
+		sb.append("    r.buycode, b.seq, r.created_at, r.updated_at, r.delete_flg, b.r_uid, b.b_uid, b.b_at, b.isdelivery, b.d_at, ");
+		sb.append("    b.isrecieve, b.r_at, b.r_acp_at, b.b_acp_at ");
+		sb.append("FROM requests AS r ");
+		sb.append("LEFT JOIN buycodes AS b ON r.buycode = b.buycode AND r.request_user_id = b.r_uid ");
+		sb.append("LEFT JOIN users AS u ON b.b_uid = u.id ");
+		sb.append("WHERE ");
+		sb.append("    r.delete_flg = false AND ");
+		sb.append("    request_user_id = ?");
+		PreparedStatement pst;
+		try {
+			String sql = sb.toString();
+			pst = con.prepareStatement(sql);
+			pst.setInt(1, uid);
 			ResultSet rs = pst.executeQuery();
 			while(rs.next()) {
 				RequestsJoinBuycode r = new RequestsJoinBuycode();
@@ -457,6 +532,32 @@ public class RequestDao extends BaseDao {
 	}
 	
 	/**
+	 * パラーメータで受け取ったリクエストをユーザーごとに振り分けたリストを返却
+	 * @param li buycodesテーブルを組み合わせたリクエストのリスト
+	 * @return ユーザーごとのリクエスト一覧
+	 */
+	public List<RequestsDtoPerUser> convertRequestsListPerUserForRequestUser(List<RequestsJoinBuycode> li){
+		List<RequestsDtoPerUser> rli = new ArrayList<RequestsDtoPerUser>();
+		if(!li.isEmpty() && li.size() > 0) {
+			for(RequestsJoinBuycode item : li) {
+				if(item.getBuycode() != 0) {
+					Integer i = isContainRequestForRequestUser(item, rli);
+					if(Objects.nonNull(i)) {
+						rli.get(i).addRequests(item);
+					}else {
+						RequestsDtoPerUser dto = new RequestsDtoPerUser();
+						dto.setUser_id(item.getB_uid());
+						dto.setUser_name(item.getUser_name());
+						dto.addRequests(item);
+						rli.add(dto);
+					}					
+				}
+			}
+		}
+		return rli;
+	}
+	
+	/**
 	 * パラメータで受け取ったリクエストを購入IDごとに振り分けたリストを返却
 	 * @param li　buycodesテーブルを組み合わせたリクエストのリスト
 	 * @return　購入IDごとのリクエスト一覧
@@ -476,6 +577,34 @@ public class RequestDao extends BaseDao {
 					dto.setSeq(item.getSeq());
 					dto.addRequests(item);
 					rli.add(dto);
+				}
+			}
+		}
+		return rli;
+	}
+	
+	/**
+	 * パラメータで受け取ったリクエストを購入IDごとに振り分けたリストを返却
+	 * @param li　buycodesテーブルを組み合わせたリクエストのリスト
+	 * @return　購入IDごとのリクエスト一覧
+	 */
+	public List<RequestsDtoPerBuycode> convertRequestsListPerBuycodeForRequestUser(List<RequestsJoinBuycode> li){
+		List<RequestsDtoPerBuycode> rli = new ArrayList<RequestsDtoPerBuycode>();
+		if(!li.isEmpty() && li.size() > 0) {
+			for(RequestsJoinBuycode item : li) {
+				if(item.getBuycode() != 0) {
+					Integer i = isContainRequestByBuycode(item, rli);
+					if(Objects.nonNull(i)) {
+						rli.get(i).addRequests(item);
+					}else {
+						RequestsDtoPerBuycode dto = new RequestsDtoPerBuycode();
+						dto.setUser_id(item.getB_uid());
+						dto.setUser_name(item.getUser_name());
+						dto.setBuycode(item.getBuycode());
+						dto.setSeq(item.getSeq());
+						dto.addRequests(item);
+						rli.add(dto);
+					}
 				}
 			}
 		}
@@ -670,7 +799,12 @@ public class RequestDao extends BaseDao {
 	 * @return 未分類未対応リスト
 	 */
 	public List<RequestsJoinBuycode> getRequiredActionList(int userId, int userTypeNum){
-		List<RequestsJoinBuycode> allL = findAllRequestsPerUser(userId);
+		List<RequestsJoinBuycode> allL = new ArrayList<>();
+		if(userTypeNum == UserType.BUY_USER.getValue()) {
+			allL = findAllRequestsPerUser(userId);			
+		}else if(userTypeNum == UserType.REQUEST_USER.getValue()) {
+			allL = findAllRequestsPerRequestUser(userId);
+		}
 		List<RequestsJoinBuycode> selectL = new ArrayList<RequestsJoinBuycode>();
 		for(RequestsJoinBuycode li : allL) {
 			if(userTypeNum == UserType.BUY_USER.getValue()) {
@@ -693,8 +827,13 @@ public class RequestDao extends BaseDao {
 	 * @return ユーザーごとにまとめた未対応リスト
 	 */
 	public List<RequestsDtoPerUser> getActionRequiredRequestByUserId(int userId, int userTypeNum){
-		return convertRequestsListPerUser(getRequiredActionList(userId, userTypeNum));
-		
+		List<RequestsDtoPerUser> li = new ArrayList<>();
+		if(userTypeNum == UserType.BUY_USER.getValue()) {
+			li = convertRequestsListPerUser(getRequiredActionList(userId, userTypeNum));			
+		}else if(userTypeNum == UserType.REQUEST_USER.getValue()) {
+			li = convertRequestsListPerUserForRequestUser(getRequiredActionList(userId, userTypeNum));
+		}
+		return li;
 	}
 	
 	/**
@@ -704,7 +843,13 @@ public class RequestDao extends BaseDao {
 	 * @return 購入IDごとにまとめたリスト
 	 */
 	public List<RequestsDtoPerBuycode> getActionRequiredRequestByBuycode(int userId, int userTypeNum){
-		return convertRequestsListPerBuycode(getRequiredActionList(userId, userTypeNum));
+		List<RequestsDtoPerBuycode> li = new ArrayList<>();
+		if(userTypeNum == UserType.BUY_USER.getValue()) {
+			li = convertRequestsListPerBuycode(getRequiredActionList(userId, userTypeNum));			
+		}else if(userTypeNum == UserType.REQUEST_USER.getValue()) {
+			li = convertRequestsListPerBuycodeForRequestUser(getRequiredActionList(userId, userTypeNum));
+		}
+		return li;
 	}
 	
 	

@@ -38,7 +38,7 @@ public class BuycodeController {
 	
 	@GetMapping("/accept/recieve/buycode")
 	public boolean acceptRecieveByBuycode(@RequestParam int buycode, @RequestParam int seq) {
-		return bDao.acceptDeliveryByBuycode(buycode, seq);
+		return bDao.acceptRecieveByBycode(buycode, seq);
 	}
 	
 	@GetMapping("/accept/recieve/request_id")

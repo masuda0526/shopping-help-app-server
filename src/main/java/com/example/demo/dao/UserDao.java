@@ -227,4 +227,19 @@ public class UserDao extends BaseDao {
 		return name;
 	}
 	
+	public int getUserType(int uid) {
+		String sql = "SELECT user_type FROM users WHERE id = ?";
+		int user_type = 0;
+		try {
+			PreparedStatement pst = con.prepareStatement(sql);
+			pst.setInt(1, uid);
+			ResultSet rs = pst.executeQuery();
+			rs.next();
+			user_type = rs.getInt("user_type");
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return user_type;
+	}
+	
 }
